@@ -14,9 +14,23 @@ defmodule AbsinthePlug.Test.Schema do
     Enum.find(@books, &(Map.fetch!(&1, :isbn) == isbn))
   end
 
+  def batch_get_profile_picture(_, author_names) do
+    for name <- author_names, into: %{} do
+      {name, "https://prof_pic/#{name}"}
+    end
+  end
+
   object :author do
     field(:name, :string)
     field(:age, :integer)
+
+    field(:profile_picture, :string) do
+      resolve(fn author, _, _ ->
+        batch({__MODULE__, :batch_get_profile_picture}, author.name, fn batch_results ->
+          {:ok, Map.get(batch_results, author.name)}
+        end)
+      end)
+    end
   end
 
   object :book do
@@ -24,6 +38,12 @@ defmodule AbsinthePlug.Test.Schema do
     field(:title, :string)
     field(:pages, :integer)
     field(:author, :author)
+
+    field(:comments, list_of(:string)) do
+      resolve(fn _, args, _ ->
+        {:ok, ["comment1", "comment2"]}
+      end)
+    end
   end
 
   query do

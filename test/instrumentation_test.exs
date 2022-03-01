@@ -24,6 +24,8 @@ defmodule OpentelemetryAbsintheTest.Instrumentation do
   setup do
     Application.delete_env(:opentelemetry_absinthe, :trace_options)
     OpentelemetryAbsinthe.Instrumentation.teardown()
+    OpentelemetryAbsinthe.ResolveInstrumentation.teardown()
+    OpentelemetryAbsinthe.BatchInstrumentation.teardown()
     :otel_batch_processor.set_exporter(:otel_exporter_pid, self())
   end
 
