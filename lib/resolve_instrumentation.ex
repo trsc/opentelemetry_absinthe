@@ -47,7 +47,20 @@ defmodule OpentelemetryAbsinthe.ResolveInstrumentation do
 
   def handle_resolution_start(_event_name, _measurements, metadata, config) do
     field_name = metadata.resolution.definition.name
-    attributes = [{"graphql.field.name", field_name}]
+    field_paths = Absinthe.Resolution.path(metadata.resolution)
+    full_field_path = Enum.join(field_paths, ", ")
+
+    name_field_path =
+      field_paths
+      |> Enum.filter(fn path -> not is_integer(path) end)
+      |> Enum.join(", ")
+
+    attributes = %{
+      "graphql.field.name": field_name,
+      "graphql.field.alias": metadata.resolution.definition.alias,
+      "graphql.full_field_path": full_field_path,
+      "graphql.name_field_path": name_field_path
+    }
 
     OpentelemetryTelemetry.start_telemetry_span(@tracer_id, "#{config.resolve_span_name} #{field_name}", metadata, %{
       kind: :server,
