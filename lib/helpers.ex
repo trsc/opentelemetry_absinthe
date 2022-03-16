@@ -44,6 +44,11 @@ defmodule OpentelemetryAbsinthe.Helpers do
     {:middleware, Absinthe.Middleware.Batch, batch_config}
   end
 
+  defp get_batch_function_as_string(batch_fun)
+  defp get_batch_function_as_string({module, func}), do: "#{module} #{func}"
+  defp get_batch_function_as_string({module, func, first_arg}) when is_atom(first_arg), do: "#{module} #{func} #{inspect(first_arg)}"
+  defp get_batch_function_as_string({module, func, _first_arg}), do: "#{module} #{func}"
+
   @doc """
   Wrapper around the "real" batch function used by `batch_keep_span`
   Takes the passed span and sets it as the active one, then calls the original
@@ -51,7 +56,10 @@ defmodule OpentelemetryAbsinthe.Helpers do
   """
   def batch_fun_wrapper({{module, func, param}, span}, aggregate) do
     OpenTelemetry.Tracer.set_current_span(span)
-    apply(module, func, [param, aggregate])
+    batch_id = get_batch_function_as_string({module, func, param})
+    OpenTelemetry.Tracer.with_span "traced-batch-execution #{batch_id}" do
+      apply(module, func, [param, aggregate])
+    end
   end
 
   @doc "Simple dropin replacement for `Absinthe.Resolution.Helpers.async`, add tracing to async"
@@ -60,7 +68,9 @@ defmodule OpentelemetryAbsinthe.Helpers do
 
     decorated_fun = fn ->
       OpenTelemetry.Tracer.set_current_span(span_ctx)
-      fun.()
+      OpenTelemetry.Tracer.with_span "traced-async-execution" do
+        fun.()
+      end
     end
 
     Absinthe.Resolution.Helpers.async(decorated_fun, opts)
