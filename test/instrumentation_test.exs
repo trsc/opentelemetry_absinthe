@@ -38,7 +38,7 @@ defmodule OpentelemetryAbsintheTest.Instrumentation do
       assert [
                "graphql.request.query",
                "graphql.request.variables",
-               "graphql.response.errors",
+               "graphql.response.errors"
              ] = attributes |> keys() |> Enum.sort()
     end
 

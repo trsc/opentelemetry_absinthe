@@ -8,8 +8,6 @@ defmodule OpentelemetryAbsinthe.ResolveInstrumentation do
   (you can still call `OpentelemetryAbsinthe.ResolveInstrumentation.setup()` in your application startup
   code, it just won't do anything.)
   """
-
-  alias OpenTelemetry.Span
   require Record
 
   @tracer_id __MODULE__
@@ -62,22 +60,18 @@ defmodule OpentelemetryAbsinthe.ResolveInstrumentation do
       "graphql.name_field_path": name_field_path
     }
 
+    execution_ctx =
+      OpentelemetryAbsinthe.Registry.get_absinthe_execution_span() || OpenTelemetry.Tracer.current_span_ctx()
+
+    OpenTelemetry.Tracer.set_current_span(execution_ctx)
+
     OpentelemetryTelemetry.start_telemetry_span(@tracer_id, "#{config.resolve_span_name} #{field_name}", metadata, %{
       kind: :server,
       attributes: attributes
     })
   end
 
-  def handle_resolution_stop(_event_name, _measurements, data, config) do
-    ctx = OpentelemetryTelemetry.set_current_telemetry_span(@tracer_id, data)
-
+  def handle_resolution_stop(_event_name, _measurements, data, _config) do
     OpentelemetryTelemetry.end_telemetry_span(@tracer_id, data)
   end
-
-  # Surprisingly, that doesn't seem to by anything in the stdlib to conditionally
-  # put stuff in a list / keyword list.
-  # This snippet is approved by José himself:
-  # https://elixirforum.com/t/creating-list-adding-elements-on-specific-conditions/6295/4?u=learts
-  defp put_if(list, false, _), do: list
-  defp put_if(list, true, value), do: [value | list]
 end

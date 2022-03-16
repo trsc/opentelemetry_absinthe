@@ -60,10 +60,13 @@ defmodule OpentelemetryAbsinthe.Instrumentation do
       )
       |> put_if(config.trace_request_query, {"graphql.request.query", params["query"]})
 
-    OpentelemetryTelemetry.start_telemetry_span(@tracer_id, config.span_name, metadata, %{
-      kind: :server,
-      attributes: attributes
-    })
+    span =
+      OpentelemetryTelemetry.start_telemetry_span(@tracer_id, config.span_name, metadata, %{
+        kind: :server,
+        attributes: attributes
+      })
+
+    OpentelemetryAbsinthe.Registry.put_absinthe_execution_span(span)
   end
 
   def handle_operation_stop(_event_name, _measurements, data, config) do

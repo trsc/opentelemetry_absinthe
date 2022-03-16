@@ -9,7 +9,6 @@ defmodule OpentelemetryAbsinthe.BatchInstrumentation do
   code, it just won't do anything.)
   """
 
-  alias OpenTelemetry.Span
   require Record
 
   @tracer_id __MODULE__
@@ -49,6 +48,11 @@ defmodule OpentelemetryAbsinthe.BatchInstrumentation do
     batch_function_name = get_batch_function_as_string(metadata.batch_fun)
     attributes = [{"graphql.batch.function", batch_function_name}]
 
+    execution_ctx =
+      OpentelemetryAbsinthe.Registry.get_absinthe_execution_span() || OpenTelemetry.Tracer.current_span_ctx()
+
+    OpenTelemetry.Tracer.set_current_span(execution_ctx)
+
     OpentelemetryTelemetry.start_telemetry_span(
       @tracer_id,
       "#{config.batch_span_name} #{batch_function_name}",
@@ -60,22 +64,13 @@ defmodule OpentelemetryAbsinthe.BatchInstrumentation do
     )
   end
 
-  def handle_batch_stop(_event_name, _measurements, data, config) do
-    ctx = OpentelemetryTelemetry.set_current_telemetry_span(@tracer_id, data)
-
+  def handle_batch_stop(_event_name, _measurements, data, _config) do
     OpentelemetryTelemetry.end_telemetry_span(@tracer_id, data)
   end
-
-  # Surprisingly, that doesn't seem to by anything in the stdlib to conditionally
-  # put stuff in a list / keyword list.
-  # This snippet is approved by José himself:
-  # https://elixirforum.com/t/creating-list-adding-elements-on-specific-conditions/6295/4?u=learts
-  defp put_if(list, false, _), do: list
-  defp put_if(list, true, value), do: [value | list]
 
   # Get batch function as string, the value should come from metadata.batch_fun at telemetry event function
   # correspond to data format at https://hexdocs.pm/absinthe/Absinthe.Middleware.Batch.html#t:batch_fun/0
   defp get_batch_function_as_string(batch_fun)
   defp get_batch_function_as_string({module, func}), do: "#{module} #{func}"
-  defp get_batch_function_as_string({module, func, first_arg}), do: "#{module} #{func}"
+  defp get_batch_function_as_string({module, func, _first_arg}), do: "#{module} #{func}"
 end
