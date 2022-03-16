@@ -45,7 +45,7 @@ defmodule OpentelemetryAbsinthe.BatchInstrumentation do
   end
 
   def handle_batch_start(_event_name, _measurements, metadata, config) do
-    batch_function_name = get_batch_function_as_string(metadata.batch_fun)
+    batch_function_name = OpentelemetryAbsinthe.Helpers.get_batch_function_as_string(metadata.batch_fun)
     attributes = [{"graphql.batch.function", batch_function_name}]
 
     execution_ctx =
@@ -67,11 +67,4 @@ defmodule OpentelemetryAbsinthe.BatchInstrumentation do
   def handle_batch_stop(_event_name, _measurements, data, _config) do
     OpentelemetryTelemetry.end_telemetry_span(@tracer_id, data)
   end
-
-  # Get batch function as string, the value should come from metadata.batch_fun at telemetry event function
-  # correspond to data format at https://hexdocs.pm/absinthe/Absinthe.Middleware.Batch.html#t:batch_fun/0
-  defp get_batch_function_as_string(batch_fun)
-  defp get_batch_function_as_string({module, func}), do: "#{module} #{func}"
-  defp get_batch_function_as_string({module, func, first_arg}) when is_atom(first_arg), do: "#{module} #{func} #{inspect(first_arg)}"
-  defp get_batch_function_as_string({module, func, _first_arg}), do: "#{module} #{func}"
 end

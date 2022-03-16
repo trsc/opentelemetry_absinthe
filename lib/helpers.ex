@@ -44,10 +44,24 @@ defmodule OpentelemetryAbsinthe.Helpers do
     {:middleware, Absinthe.Middleware.Batch, batch_config}
   end
 
-  defp get_batch_function_as_string(batch_fun)
-  defp get_batch_function_as_string({module, func}), do: "#{module} #{func}"
-  defp get_batch_function_as_string({module, func, first_arg}) when is_atom(first_arg), do: "#{module} #{func} #{inspect(first_arg)}"
-  defp get_batch_function_as_string({module, func, _first_arg}), do: "#{module} #{func}"
+  def get_batch_function_as_string(batch_fun)
+  def get_batch_function_as_string({module, func}), do: "#{module} #{func}"
+
+  def get_batch_function_as_string(
+        {Absinthe.Ecto, :perform_batch, {_repo, _ecto_schema, _primary_key, assoc_field, _, _random_pid}}
+      )
+      when is_atom(assoc_field) do
+    "absinthe_ecto assoc #{assoc_field}"
+  end
+
+  def get_batch_function_as_string({__MODULE__, :batch_fun_wrapper, {{module, func, param}, _span_ctx}}) do
+    "wrapped #{get_batch_function_as_string({module, func, param})}"
+  end
+
+  def get_batch_function_as_string({module, func, first_arg}) when is_atom(first_arg),
+    do: "#{module} #{func} #{inspect(first_arg)}"
+
+  def get_batch_function_as_string({module, func, _first_arg}), do: "#{module} #{func}"
 
   @doc """
   Wrapper around the "real" batch function used by `batch_keep_span`
@@ -57,6 +71,7 @@ defmodule OpentelemetryAbsinthe.Helpers do
   def batch_fun_wrapper({{module, func, param}, span}, aggregate) do
     OpenTelemetry.Tracer.set_current_span(span)
     batch_id = get_batch_function_as_string({module, func, param})
+
     OpenTelemetry.Tracer.with_span "traced-batch-execution #{batch_id}" do
       apply(module, func, [param, aggregate])
     end
@@ -68,6 +83,7 @@ defmodule OpentelemetryAbsinthe.Helpers do
 
     decorated_fun = fn ->
       OpenTelemetry.Tracer.set_current_span(span_ctx)
+
       OpenTelemetry.Tracer.with_span "traced-async-execution" do
         fun.()
       end
