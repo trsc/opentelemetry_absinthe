@@ -72,5 +72,5 @@ defmodule OpentelemetryAbsinthe.BatchInstrumentation do
   # correspond to data format at https://hexdocs.pm/absinthe/Absinthe.Middleware.Batch.html#t:batch_fun/0
   defp get_batch_function_as_string(batch_fun)
   defp get_batch_function_as_string({module, func}), do: "#{module} #{func}"
-  defp get_batch_function_as_string({module, func, _first_arg}), do: "#{module} #{func}"
+  defp get_batch_function_as_string({module, func, first_arg}), do: "#{module} #{func} #{inspect(first_arg)}"
 end
