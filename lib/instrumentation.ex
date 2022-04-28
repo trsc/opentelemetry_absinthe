@@ -56,12 +56,12 @@ defmodule OpentelemetryAbsinthe.Instrumentation do
       []
       |> put_if(
         config.trace_request_variables,
-        {"graphql.request.variables", Jason.encode!(params["variables"])}
+        {:"graphql.request.variables", Jason.encode!(params["variables"])}
       )
-      |> put_if(config.trace_request_query, {"graphql.request.query", params["query"]})
+      |> put_if(config.trace_request_query, {:"graphql.request.query", params["query"]})
 
     span =
-      OpentelemetryTelemetry.start_telemetry_span(@tracer_id, config.span_name, metadata, %{
+      OpentelemetryTelemetry.start_telemetry_span(@tracer_id, :"#{config.span_name}", metadata, %{
         kind: :server,
         attributes: attributes
       })
@@ -76,11 +76,11 @@ defmodule OpentelemetryAbsinthe.Instrumentation do
       []
       |> put_if(
         config.trace_response_result,
-        {"graphql.response.result", Jason.encode!(data.blueprint.result)}
+        {:"graphql.response.result", Jason.encode!(data.blueprint.result)}
       )
       |> put_if(
         config.trace_response_errors,
-        {"graphql.response.errors", Jason.encode!(errors)}
+        {:"graphql.response.errors", Jason.encode!(errors)}
       )
 
     ctx = OpentelemetryTelemetry.set_current_telemetry_span(@tracer_id, data)

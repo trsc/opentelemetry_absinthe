@@ -72,7 +72,7 @@ defmodule OpentelemetryAbsinthe.Helpers do
     OpenTelemetry.Tracer.set_current_span(span)
     batch_id = get_batch_function_as_string({module, func, param})
 
-    OpenTelemetry.Tracer.with_span "traced-batch-execution #{batch_id}" do
+    OpenTelemetry.Tracer.with_span :"traced-batch-execution #{batch_id}" do
       apply(module, func, [param, aggregate])
     end
   end
@@ -84,7 +84,7 @@ defmodule OpentelemetryAbsinthe.Helpers do
     decorated_fun = fn ->
       OpenTelemetry.Tracer.set_current_span(span_ctx)
 
-      OpenTelemetry.Tracer.with_span "traced-async-execution" do
+      OpenTelemetry.Tracer.with_span :"traced-async-execution" do
         fun.()
       end
     end

@@ -37,11 +37,11 @@ defmodule OpentelemetryAbsintheTest.BatchInstrumentation do
       assert_receive {:span, data = span(attributes: attributes)}, 5000
 
       assert [
-               "graphql.batch.function"
+               :"graphql.batch.function"
              ] = attributes |> keys() |> Enum.sort()
 
-      assert data(attributes)["graphql.batch.function"] == "Elixir.AbsinthePlug.Test.Schema batch_get_profile_picture"
-      assert span(data, :name) == "absinthe graphql batch Elixir.AbsinthePlug.Test.Schema batch_get_profile_picture"
+      assert data(attributes)[:"graphql.batch.function"] == "Elixir.AbsinthePlug.Test.Schema batch_get_profile_picture"
+      assert span(data, :name) == :"absinthe graphql batch Elixir.AbsinthePlug.Test.Schema batch_get_profile_picture"
     end
   end
 

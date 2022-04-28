@@ -36,9 +36,9 @@ defmodule OpentelemetryAbsintheTest.Instrumentation do
       assert_receive {:span, span(attributes: attributes)}, 5000
 
       assert [
-               "graphql.request.query",
-               "graphql.request.variables",
-               "graphql.response.errors"
+               :"graphql.request.query",
+               :"graphql.request.variables",
+               :"graphql.response.errors"
              ] = attributes |> keys() |> Enum.sort()
     end
 
@@ -53,8 +53,8 @@ defmodule OpentelemetryAbsintheTest.Instrumentation do
       assert_receive {:span, span(attributes: attributes)}, 5000
 
       assert [
-               "graphql.request.variables",
-               "graphql.response.errors"
+               :"graphql.request.variables",
+               :"graphql.response.errors"
              ] = attributes |> keys() |> Enum.sort()
     end
 
@@ -69,9 +69,9 @@ defmodule OpentelemetryAbsintheTest.Instrumentation do
       assert_receive {:span, span(attributes: attributes)}, 5000
 
       assert [
-               "graphql.request.query",
-               "graphql.request.variables",
-               "graphql.response.errors"
+               :"graphql.request.query",
+               :"graphql.request.variables",
+               :"graphql.response.errors"
              ] = attributes |> keys() |> Enum.sort()
     end
   end

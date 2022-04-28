@@ -46,7 +46,7 @@ defmodule OpentelemetryAbsinthe.BatchInstrumentation do
 
   def handle_batch_start(_event_name, _measurements, metadata, config) do
     batch_function_name = OpentelemetryAbsinthe.Helpers.get_batch_function_as_string(metadata.batch_fun)
-    attributes = [{"graphql.batch.function", batch_function_name}]
+    attributes = [{:"graphql.batch.function", batch_function_name}]
 
     execution_ctx =
       OpentelemetryAbsinthe.Registry.get_absinthe_execution_span() || OpenTelemetry.Tracer.current_span_ctx()
@@ -55,7 +55,7 @@ defmodule OpentelemetryAbsinthe.BatchInstrumentation do
 
     OpentelemetryTelemetry.start_telemetry_span(
       @tracer_id,
-      "#{config.batch_span_name} #{batch_function_name}",
+      :"#{config.batch_span_name} #{batch_function_name}",
       metadata,
       %{
         kind: :server,
