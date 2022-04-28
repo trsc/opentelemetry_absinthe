@@ -11,6 +11,7 @@ defmodule OpentelemetryAbsinthe.Instrumentation do
 
   alias OpenTelemetry.Span
   require Record
+  import OpentelemetryAbsinthe.Macro
 
   @tracer_id __MODULE__
 
@@ -53,12 +54,17 @@ defmodule OpentelemetryAbsinthe.Instrumentation do
     params = metadata |> Map.get(:options, []) |> Keyword.get(:params, %{})
 
     attributes =
-      []
+      %{}
       |> put_if(
         config.trace_request_variables,
-        {:"graphql.request.variables", Jason.encode!(params["variables"])}
+        :"graphql.request.variables", 
+        Jason.encode!(params["variables"])
       )
-      |> put_if(config.trace_request_query, {:"graphql.request.query", params["query"]})
+      |> put_if(
+        config.trace_request_query, 
+        :"graphql.request.query", 
+        params["query"]
+      )
 
     span =
       OpentelemetryTelemetry.start_telemetry_span(@tracer_id, :"#{config.span_name}", metadata, %{
@@ -73,14 +79,16 @@ defmodule OpentelemetryAbsinthe.Instrumentation do
     errors = data.blueprint.result[:errors]
 
     result_attributes =
-      []
+      %{}
       |> put_if(
         config.trace_response_result,
-        {:"graphql.response.result", Jason.encode!(data.blueprint.result)}
+        :"graphql.response.result", 
+        Jason.encode!(data.blueprint.result)
       )
       |> put_if(
         config.trace_response_errors,
-        {:"graphql.response.errors", Jason.encode!(errors)}
+        :"graphql.response.errors", 
+        Jason.encode!(errors)
       )
 
     ctx = OpentelemetryTelemetry.set_current_telemetry_span(@tracer_id, data)
@@ -95,11 +103,4 @@ defmodule OpentelemetryAbsinthe.Instrumentation do
 
     OpentelemetryTelemetry.end_telemetry_span(@tracer_id, data)
   end
-
-  # Surprisingly, that doesn't seem to by anything in the stdlib to conditionally
-  # put stuff in a list / keyword list.
-  # This snippet is approved by José himself:
-  # https://elixirforum.com/t/creating-list-adding-elements-on-specific-conditions/6295/4?u=learts
-  defp put_if(list, false, _), do: list
-  defp put_if(list, true, value), do: [value | list]
 end
