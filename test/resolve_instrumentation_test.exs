@@ -48,10 +48,10 @@ defmodule OpentelemetryAbsintheTest.ResolveInstrumentation do
       {:ok, _} = Absinthe.run(@query, Schema, variables: %{"isbn" => "A1"})
       assert_receive {:span, data = span(attributes: attributes)}, 5000
 
-      assert data(attributes)[:"graphql.field.name"] == "book"
-      assert data(attributes)[:"graphql.field.alias"] == "bowlBook"
-      assert data(attributes)[:"graphql.name_field_path"] == "bowlBook"
-      assert span(data, :name) == "absinthe graphql resolve book"
+      assert data(attributes)[:"graphql.field.name"] == :book
+      assert data(attributes)[:"graphql.field.alias"] == :bowlBook
+      assert data(attributes)[:"graphql.name_field_path"] == [:bowlBook]
+      assert span(data, :name) == :"absinthe graphql resolve book"
     end
 
     test "able to trace root query + additional resolving field data" do
@@ -65,17 +65,17 @@ defmodule OpentelemetryAbsintheTest.ResolveInstrumentation do
       assert Enum.any?(spans, fn data ->
                attributes = span(data, :attributes)
 
-               data(attributes)[:"graphql.field.name"] == "book" and
-                 data(attributes)[:"graphql.name_field_path"] == "book" and
-                 span(data, :name) == "absinthe graphql resolve book"
+               data(attributes)[:"graphql.field.name"] == :book and
+                 data(attributes)[:"graphql.name_field_path"] == [:book] and
+                 span(data, :name) == :"absinthe graphql resolve book"
              end)
 
       assert Enum.any?(spans, fn data ->
                attributes = span(data, :attributes)
 
-               data(attributes)[:"graphql.field.name"] == "comments" and
-                 data(attributes)[:"graphql.name_field_path"] == "book, comments" and
-                 span(data, :name) == "absinthe graphql resolve comments"
+               data(attributes)[:"graphql.field.name"] == :comments and
+                 data(attributes)[:"graphql.name_field_path"] == [:book, :comments] and
+                 span(data, :name) == :"absinthe graphql resolve comments"
              end)
     end
   end

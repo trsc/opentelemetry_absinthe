@@ -44,18 +44,18 @@ defmodule OpentelemetryAbsinthe.ResolveInstrumentation do
   end
 
   def handle_resolution_start(_event_name, _measurements, metadata, config) do
-    field_name = metadata.resolution.definition.name
+    field_name = safe_string_to_atom(metadata.resolution.definition.name)
     field_paths = Absinthe.Resolution.path(metadata.resolution)
-    full_field_path = Enum.join(field_paths, ", ")
+    full_field_path = Enum.map(field_paths, fn field -> safe_string_to_atom(field) end)
 
     name_field_path =
       field_paths
       |> Enum.filter(fn path -> not is_integer(path) end)
-      |> Enum.join(", ")
+      |> Enum.map(fn field -> safe_string_to_atom(field) end)
 
     attributes = %{
-      "graphql.field.name": field_name,
-      "graphql.field.alias": metadata.resolution.definition.alias,
+      "graphql.field.name": safe_string_to_atom(metadata.resolution.definition.name),
+      "graphql.field.alias": safe_string_to_atom(metadata.resolution.definition.alias),
       "graphql.full_field_path": full_field_path,
       "graphql.name_field_path": name_field_path
     }
@@ -65,7 +65,7 @@ defmodule OpentelemetryAbsinthe.ResolveInstrumentation do
 
     OpenTelemetry.Tracer.set_current_span(execution_ctx)
 
-    OpentelemetryTelemetry.start_telemetry_span(@tracer_id, "#{config.resolve_span_name} #{field_name}", metadata, %{
+    OpentelemetryTelemetry.start_telemetry_span(@tracer_id, :"#{config.resolve_span_name} #{field_name}", metadata, %{
       kind: :server,
       attributes: attributes
     })
@@ -74,4 +74,7 @@ defmodule OpentelemetryAbsinthe.ResolveInstrumentation do
   def handle_resolution_stop(_event_name, _measurements, data, _config) do
     OpentelemetryTelemetry.end_telemetry_span(@tracer_id, data)
   end
+
+  def safe_string_to_atom(string) when is_binary(string), do: String.to_atom(string)
+  def safe_string_to_atom(_any_else), do: _any_else
 end
