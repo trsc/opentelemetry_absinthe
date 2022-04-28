@@ -57,12 +57,12 @@ defmodule OpentelemetryAbsinthe.Instrumentation do
       %{}
       |> put_if(
         config.trace_request_variables,
-        :"graphql.request.variables", 
+        :"graphql.request.variables",
         Jason.encode!(params["variables"])
       )
       |> put_if(
-        config.trace_request_query, 
-        :"graphql.request.query", 
+        config.trace_request_query,
+        :"graphql.request.query",
         params["query"]
       )
 
@@ -82,12 +82,12 @@ defmodule OpentelemetryAbsinthe.Instrumentation do
       %{}
       |> put_if(
         config.trace_response_result,
-        :"graphql.response.result", 
+        :"graphql.response.result",
         Jason.encode!(data.blueprint.result)
       )
       |> put_if(
         config.trace_response_errors,
-        :"graphql.response.errors", 
+        :"graphql.response.errors",
         Jason.encode!(errors)
       )
 
