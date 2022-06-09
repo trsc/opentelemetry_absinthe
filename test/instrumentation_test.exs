@@ -10,7 +10,7 @@ defmodule OpentelemetryAbsintheTest.Instrumentation do
   end
 
   @query """
-  query($isbn: String!) {
+  query LoadBooks($isbn: String!) {
     book(isbn: $isbn) {
       title
       author {
@@ -32,10 +32,12 @@ defmodule OpentelemetryAbsintheTest.Instrumentation do
   describe "trace configuration" do
     test "by default all graphql stuff is recorded in attributes" do
       OpentelemetryAbsinthe.Instrumentation.setup()
-      {:ok, _} = Absinthe.run(@query, Schema, variables: %{"isbn" => "A1"})
+      {:ok, _} = Absinthe.run(@query, Schema, analyze_complexity: true, variables: %{"isbn" => "A1"})
       assert_receive {:span, span(attributes: attributes)}, 5000
 
       assert [
+               :"graphql.operation.complexity",
+               :"graphql.operation.name",
                :"graphql.request.query",
                :"graphql.request.variables",
                :"graphql.response.errors"
@@ -49,10 +51,12 @@ defmodule OpentelemetryAbsintheTest.Instrumentation do
       )
 
       OpentelemetryAbsinthe.Instrumentation.setup()
-      {:ok, _} = Absinthe.run(@query, Schema, variables: %{"isbn" => "A1"})
+      {:ok, _} = Absinthe.run(@query, Schema, analyze_complexity: true, variables: %{"isbn" => "A1"})
       assert_receive {:span, span(attributes: attributes)}, 5000
 
       assert [
+               :"graphql.operation.complexity",
+               :"graphql.operation.name",
                :"graphql.request.variables",
                :"graphql.response.errors"
              ] = attributes |> keys() |> Enum.sort()
@@ -65,10 +69,12 @@ defmodule OpentelemetryAbsintheTest.Instrumentation do
       )
 
       OpentelemetryAbsinthe.Instrumentation.setup(trace_request_query: true)
-      {:ok, _} = Absinthe.run(@query, Schema, variables: %{"isbn" => "A1"})
+      {:ok, _} = Absinthe.run(@query, Schema, analyze_complexity: true, variables: %{"isbn" => "A1"})
       assert_receive {:span, span(attributes: attributes)}, 5000
 
       assert [
+               :"graphql.operation.complexity",
+               :"graphql.operation.name",
                :"graphql.request.query",
                :"graphql.request.variables",
                :"graphql.response.errors"

@@ -77,6 +77,7 @@ defmodule OpentelemetryAbsinthe.Instrumentation do
 
   def handle_operation_stop(_event_name, _measurements, data, config) do
     errors = data.blueprint.result[:errors]
+    operation = Absinthe.Blueprint.current_operation(data.blueprint)
 
     result_attributes =
       %{}
@@ -89,6 +90,16 @@ defmodule OpentelemetryAbsinthe.Instrumentation do
         config.trace_response_errors,
         :"graphql.response.errors",
         Jason.encode!(errors)
+      )
+      |> put_if(
+        operation.name,
+        :"graphql.operation.name",
+        operation.name
+      )
+      |> put_if(
+        operation.complexity,
+        :"graphql.operation.complexity",
+        operation.complexity
       )
 
     ctx = OpentelemetryTelemetry.set_current_telemetry_span(@tracer_id, data)

@@ -76,5 +76,5 @@ defmodule OpentelemetryAbsinthe.ResolveInstrumentation do
   end
 
   def safe_string_to_atom(string) when is_binary(string), do: String.to_atom(string)
-  def safe_string_to_atom(_any_else), do: _any_else
+  def safe_string_to_atom(any_else), do: any_else
 end
