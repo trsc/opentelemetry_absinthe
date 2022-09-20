@@ -40,7 +40,7 @@ defmodule AbsinthePlug.Test.Schema do
     field(:author, :author)
 
     field(:comments, list_of(:string)) do
-      resolve(fn _, args, _ ->
+      resolve(fn _parent, _args, _ctx ->
         {:ok, ["comment1", "comment2"]}
       end)
     end
