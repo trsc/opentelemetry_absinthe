@@ -23,20 +23,20 @@ defmodule OpentelemetryAbsinthe.MixProject do
   defp deps do
     [
       {:absinthe, ">= 1.7.0", optional: true},
-      {:jason, "~> 1.2"},
-      {:opentelemetry_api, "~> 1.0"},
-      {:telemetry, "~> 1.0.0"},
-      {:opentelemetry_telemetry, "~> 1.0.0-beta.7"}
+      {:jason, "~> 1.4"},
+      {:opentelemetry_api, "~> 1.1"},
+      {:telemetry, "~> 1.1.0"},
+      {:opentelemetry_telemetry, "~> 1.0.0"}
     ] ++ dev_deps()
   end
 
   defp dev_deps do
     [
       {:absinthe_plug, "~> 1.5", only: :test},
-      {:opentelemetry, "~> 1.0", only: :test},
-      {:opentelemetry_exporter, "~> 1.0", only: :test},
-      {:plug_cowboy, "~> 2.2", only: :test},
-      {:credo, "~> 1.4", only: [:dev, :test]},
+      {:opentelemetry, "~> 1.1", only: :test},
+      {:opentelemetry_exporter, "~> 1.2", only: :test},
+      {:plug_cowboy, "~> 2.5", only: :test},
+      {:credo, "~> 1.6", only: [:dev, :test]},
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
